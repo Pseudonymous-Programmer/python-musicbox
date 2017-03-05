@@ -7,6 +7,8 @@ import simpleaudio
 import subprocess
 import random
 import getcher
+import timer
+
 def replace(part,replacement,folder):
     print(folder)
     os.chdir(folder)
@@ -16,32 +18,43 @@ def replace(part,replacement,folder):
             newName = regex.sub(replacement,file)
             print('Moving {} to {}!'.format(file,newName))
             shutil.move(file,newName)
-def playFile(path,loop=False):
+            
+def playFile(path):
     wObj = simpleaudio.WaveObject.from_wave_file(path)
-    pObj = wObj.play()
-    while(pObj.is_playing()):
-        if(KB.kbhit()):
-            press = KB.getch()
-            if(press == 'q'):
-                os.system('clear')
-                quit()
-            if(press == 's'):
-                loop = False
-                break
-            if(press == 'l'):
-                loop = not loop
-    if(loop):
-        playFile(path,True)
-    pObj.stop()
+    cont = True
+    loop = True
+    forever = False
+    waiter = timer.Timer()
+    while(cont):
+        pObj = wObj.play()
+        while(pObj.is_playing()):
+            if(KB.kbhit()):
+                press = KB.getch()
+                if(press == 'q'):
+                    os.system('clear')
+                    quit()
+                if(press == 's'):
+                    loop = False
+                    break
+                if(press == 'l'):
+                    forever = not forever
+        pObj.stop()
+        if(180 < waiter.elapsed() and not forever):
+            loop = False
+        if(not loop):
+            cont = False
+            
 def convertToWav(path):
     subprocess.run(['ffmpeg','-i',path,re.sub(r'\.\w+$',r'.wav',path)])
+    
 def convertAllWav():
     for folder,subfolders,files in os.walk('.'):
         for file in files:
-            if(file.endswith('mp3') or file.endswith('mkv')):
+            if(file.endswith('mp3') or file.endswith('mkv') or file.endswith('.webm') or file.endswith('.mp4')):
                 print('Converting {} to a .wav file...')
                 convertToWav(os.path.join(folder,file))
                 os.unlink(os.path.join(folder,file))
+                
 def getAllMusic(folder):
     ret = []
     os.chdir(folder)
@@ -50,11 +63,13 @@ def getAllMusic(folder):
             ret.append(os.path.join(folder,file))
     os.chdir('..')
     return(ret)
+
 def musicDict(folders):
     ret = {}
     for folder in folders:
         ret[folder] = getAllMusic(folder)
     return(ret)
+
 def shuffle(musicDict,categories):
     while(True):
         choice = random.choice(categories)
@@ -62,6 +77,7 @@ def shuffle(musicDict,categories):
         os.system('clear')
         print("\rNow Playing: {} from {}".format(re.sub(r"^.+/","",song)[:-4:],choice),end='')
         playFile(song)
+        
 def get(url,folder):
     if(not os.path.exists(folder)):
         os.mkdir(folder)
@@ -69,6 +85,7 @@ def get(url,folder):
     subprocess.run(['youtube-dl',url])
     os.chdir('..')
     convertAllWav()
+    
 def parseArgs():
     choice = sys.argv[1]
     os.system('clear')
@@ -87,6 +104,7 @@ def parseArgs():
         get(sys.argv[2],sys.argv[3])
     else:
         print("Mode \"{}\" is not recognized.".format(choice))
+        
 try:
     os.chdir("/home/tommy/Desktop/Jamz")
     print('\033[36m')
