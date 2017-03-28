@@ -102,6 +102,18 @@ def parseArgs():
         shuffle(music,allFolders)
     elif(choice == 'get'):
         get(sys.argv[2],sys.argv[3])
+    elif(choice == 'list'):
+        with open(sys.argv[2],'r') as f:
+            lines = f.read().split('\n')[:-1:]
+        lines = [i.split(':') for i in lines]
+        lineDict = {}
+        for folder,song in lines:
+            song = os.path.join(folder,song + '.wav')
+            if(folder in lineDict):
+                lineDict[folder].append(song)
+            else:
+                lineDict[folder] = [song]
+        shuffle(lineDict,list(lineDict.keys()))
     else:
         print("Mode \"{}\" is not recognized.".format(choice))
         
