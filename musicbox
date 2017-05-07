@@ -68,12 +68,15 @@ def musicDict(folders):
         ret[folder] = getAllMusic(folder)
     return(ret)
 
+def flush():
+    print("\r" + ' '*shutil.get_terminal_size().columns+'\r',end='')
+    
 def shuffle(musicDict,categories):
     while(True):
         choice = random.choice(categories)
         song = random.choice(musicDict[choice])
-        print("\r" + ' '*100,end='')
-        print("\rNow Playing: {} from {}".format(re.sub(r"^.+/","",song)[:-4:],choice),end='')
+        flush()
+        print("Now Playing: {} from {}".format(re.sub(r"^.+/","",song)[:-4:],choice),end='')
         playFile(song)
         
 def get(url,folder):
@@ -115,9 +118,9 @@ def parseArgs():
         print("Mode \"{}\" is not recognized.".format(choice))
         
 try:
-    with open('installationfolder','r') as f:
-        os.chdir(f.read().strip()) 
+    os.chdir('/'.join(__file__.split('/')[:-1:]))
     KB = getcher.KBHit()
     parseArgs()
 finally:
+    
     KB.set_normal_term()
