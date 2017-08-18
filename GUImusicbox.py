@@ -56,9 +56,10 @@ class MusicPlayer(tk.Frame):
         self.skip = tk.Button(self.parent,text="Skip",command=skip)
         self.skip.place(x=50,y=20)
         def toggle_loop():
+            print("toogle!")
             self.loop = not self.loop
-        self.loop = tk.Button(self.parent,text="Loop",command=toggle_loop)
-        self.loop.place(x=200,y=20)
+        self.loopBtn = tk.Button(self.parent,text="Loop",command=toggle_loop)
+        self.loopBtn.place(x=200,y=20)
         
         self.running = True
         self.shuffler = threading.Thread(target=self.shuffle)
@@ -75,10 +76,12 @@ class MusicPlayer(tk.Frame):
             self.play = True
             while(self.play):
                 if(not self.player.is_playing()):
-                    self.play = timer.elapsed() > 180 and (not self.loop)
+                    self.play = timer.elapsed() < 180 or self.loop
+                    print(self.play)
                     if(self.play):
                         self.player = wave.play()
             self.player.stop()
+            self.loop = False
 
     def cleanup(self):
         if(self.running):
